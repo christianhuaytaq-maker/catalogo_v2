@@ -1,41 +1,33 @@
 @extends('layouts.app')
 
+@section('title', 'Catálogo de Productos')
+
 @section('content')
-    <h1 class="text-2xl font-bold mb-4">Catálogo de Productos</h1>
+<div class="container">
 
-    @if(session('success'))
-        <div class="bg-green-200 text-green-800 p-3 rounded mb-4">
-            {{ session('success') }}
-        </div>
-    @endif
+    <h2 class="text-2xl font-bold mb-4">Catálogo de Productos</h2>
 
-    @if(session('error'))
-        <div class="bg-red-200 text-red-800 p-3 rounded mb-4">
-            {{ session('error') }}
-        </div>
-    @endif
-
-    <form method="GET" action="{{ route('products.index') }}" class="flex gap-2 mb-4">
+    {{-- Formulario de búsqueda --}}
+    <form method="GET" action="{{ route('products.index') }}" class="flex gap-2 mb-4 flex-wrap">
         <input type="text" name="search" placeholder="Buscar por nombre..."
                value="{{ request('search') }}"
-               class="border p-2 rounded w-1/3">
-
+               class="border p-2 rounded w-64">
         <input type="text" name="category" placeholder="Filtrar por categoría..."
                value="{{ request('category') }}"
-               class="border p-2 rounded w-1/3">
-
+               class="border p-2 rounded w-64">
         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Buscar</button>
-
-        <a href="{{ route('products.index') }}" class="bg-gray-400 text-white px-4 py-2 rounded">
-            Limpiar
-        </a>
+        <a href="{{ route('products.index') }}" class="bg-gray-400 text-white px-4 py-2 rounded">Limpiar</a>
     </form>
 
-    <a href="{{ route('products.create') }}"
-       class="bg-green-600 text-white px-4 py-2 rounded mb-4 inline-block">
-        + Nuevo Producto
-    </a>
+    {{-- Botón NUEVO PRODUCTO --}}
+    <div class="mb-4">
+        <a href="{{ route('products.create') }}"
+           style="background:#16a34a; color:white; padding:10px 18px; border-radius:8px; text-decoration:none; font-weight:bold;">
+            + Nuevo Producto
+        </a>
+    </div>
 
+    {{-- Tabla de productos --}}
     <table class="w-full bg-white shadow rounded">
         <thead class="bg-gray-800 text-white">
             <tr>
@@ -48,34 +40,36 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($products as $product)
-                <tr class="border-b hover:bg-gray-100">
-                    <td class="p-2">{{ $product->id }}</td>
-                    <td class="p-2">{{ $product->name }}</td>
-                    <td class="p-2">{{ $product->category }}</td>
-                    <td class="p-2">S/ {{ number_format($product->price, 2) }}</td>
-                    <td class="p-2">{{ $product->stock }}</td>
-                    <td class="p-2">
-                        <a href="{{ route('products.show', $product) }}"
-                           class="text-blue-600 hover:underline">Ver</a>
-                        <a href="{{ route('products.edit', $product) }}"
-                           class="text-yellow-600 hover:underline ml-2">Editar</a>
-                        <form action="{{ route('products.destroy', $product) }}"
-                              method="POST" class="inline">
-                            @csrf
-                            @method('DELETE')
-                            <button onclick="return confirm('¿Eliminar?')"
-                                    class="text-red-600 hover:underline ml-2">Eliminar</button>
-                        </form>
-                    </td>
-                </tr>
+            @forelse ($products as $product)
+            <tr class="border-b text-center">
+                <td class="p-2">{{ $product->id }}</td>
+                <td class="p-2">{{ $product->name }}</td>
+
+                {{-- 🔴 CAMBIO: muestra la categoría relacionada, con respaldo al texto --}}
+                <td class="p-2">
+                    {{ $product->categoryRelation->name ?? $product->category ?? '—' }}
+                </td>
+
+                <td class="p-2">S/ {{ number_format($product->price, 2) }}</td>
+                <td class="p-2">{{ $product->stock }}</td>
+                <td class="p-2 space-x-2">
+                    <a href="{{ route('products.show', $product) }}" class="text-blue-600">Ver</a>
+                    <a href="{{ route('products.edit', $product) }}" class="text-yellow-600">Editar</a>
+                    <form action="{{ route('products.destroy', $product) }}" method="POST" class="inline"
+                          onsubmit="return confirm('¿Eliminar este producto?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-red-600">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
             @empty
-                <tr><td colspan="6" class="text-center p-4">No hay productos registrados</td></tr>
+            <tr>
+                <td colspan="6" class="p-4 text-center text-gray-500">No hay productos registrados</td>
+            </tr>
             @endforelse
         </tbody>
     </table>
 
-    <div class="mt-4">
-        {{ $products->links() }}
-    </div>
+</div>
 @endsection
